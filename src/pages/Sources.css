@@ -16,13 +16,68 @@
   color: var(--text-primary);
 }
 
+.sources-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.sources-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.sources-form input {
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.checkbox-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+}
+
 .sources-add {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 8px;
   background: var(--bg-accent);
   color: var(--text-accent);
   border: 1px solid var(--border-accent);
   cursor: pointer;
+  align-self: end;
+  font-weight: 600;
+}
+
+.sources-add:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.sources-error,
+.sources-empty {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-accent);
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+
+.sources-empty {
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
 }
 
 .sources-table-card {
