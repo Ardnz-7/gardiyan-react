@@ -1,0 +1,92 @@
+.logs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logs-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.logs-filter {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.logs-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.log-row:last-child {
+  border-bottom: none;
+}
+
+.log-timestamp {
+  width: 88px;
+  color: var(--text-secondary);
+}
+
+.log-level {
+  width: 74px;
+  font-weight: 700;
+}
+
+.log-source {
+  width: 110px;
+  color: var(--text-secondary);
+}
+
+.log-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-row.info .log-level,
+.log-row.info .log-message {
+  color: var(--text-accent);
+}
+
+.log-row.warn {
+  background: var(--bg-warning);
+}
+
+.log-row.warn .log-level,
+.log-row.warn .log-message {
+  color: var(--text-warning);
+}
+
+.log-row.error {
+  background: var(--bg-danger);
+}
+
+.log-row.error .log-level,
+.log-row.error .log-message {
+  color: var(--text-danger);
+}
