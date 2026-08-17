@@ -15,14 +15,20 @@ Base.metadata.create_all(bind=engine)
 
 
 class CrawlEngine:
-    def __init__(self, source: Source, parser: Parser):
+    def __init__(self, source: Source, parser: Parser, job_id: int | None = None):
         self.source = source
         self.parser = parser
         self.session = SessionLocal()
-        self.job: CrawlJob | None = None
+        self.job_id = job_id
+        self.job = self._load_job() if job_id is not None else None
         self.visited_urls: set[str] = set()
         self.started_at: datetime | None = None
         self.completed_at: datetime | None = None
+
+    def _load_job(self) -> CrawlJob | None:
+        if self.job_id is None:
+            return None
+        return self.session.query(CrawlJob).filter(CrawlJob.id == self.job_id).first()
 
     @staticmethod
     def _normalize_date(value: Any):
@@ -110,7 +116,18 @@ class CrawlEngine:
 
     def run(self, urls: list[str] | None = None) -> CrawlJob:
         self.started_at = datetime.utcnow()
-        self.job = self._create_job()
+        if self.job is None:
+            self.job = self._create_job()
+        else:
+            self.job.status = 'running'
+            self.job.progress = 0
+            self.job.pages_visited = 0
+            self.job.records_extracted = 0
+            self.job.error_count = 0
+            self.job.started_at = self.started_at
+            self.job.completed_at = None
+            self.session.add(self.job)
+            self.session.commit()
         self._log('job started', 'INFO', 'crawler')
 
         if not self.source.base_url:
