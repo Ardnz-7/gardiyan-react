@@ -1,0 +1,81 @@
+.crawl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crawl-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.job-card {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.job-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.job-id {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.job-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.job-status-running {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+
+.job-status-completed {
+  background: var(--bg-success);
+  color: var(--text-success);
+}
+
+.job-status-error {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--bg-surface-1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--border-accent);
+}
+
+.job-details {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}

@@ -21,14 +21,14 @@
   --text-accent: #8A6D1B;
   --border-accent: #C9A227;
 
-  --bg-danger: #FCEBEB;
-  --text-danger: #8A2E2E;
+  --bg-danger: #F6C6C6;
+  --text-danger: #7A1F1F;
 
-  --bg-warning: #FBF1D6;
-  --text-warning: #8A6D1B;
+  --bg-warning: #FCE9A6;
+  --text-warning: #6B4E00;
 
-  --bg-success: #E8F0E4;
-  --text-success: #33582A;
+  --bg-success: #C9E8B5;
+  --text-success: #1F4A12;
 
   --sidebar-bg: #0B1E3C;
   --sidebar-text: #E7EAF0;
@@ -36,6 +36,10 @@
   --sidebar-active-bg: #16294A;
   --sidebar-active-text: #E4C46A;
   --sidebar-accent: #C9A227;
+  --fill-success: #2E7D32;
+  --fill-danger: #C62828;
+  --fill-warning: #B8860B;
+  --fill-muted: #9CA3AF;
 }
 
 [data-theme="dark"] {
