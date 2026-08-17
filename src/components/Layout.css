@@ -1,0 +1,28 @@
+.layout-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.layout-body {
+  display: flex;
+  flex: 1;
+}
+
+.layout-content {
+  flex: 1;
+  padding: 28px;
+  background: var(--bg-page);
+}
+
+.layout-content h2 {
+  margin: 0 0 16px;
+  color: var(--text-primary);
+}
+
+.layout-content p {
+  margin: 0;
+  color: var(--text-secondary);
+}

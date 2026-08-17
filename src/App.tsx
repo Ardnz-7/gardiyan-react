@@ -1,24 +1,25 @@
-import ThemeToggle from './components/ThemeToggle'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import Sources from './pages/Sources'
+import CrawlJobs from './pages/CrawlJobs'
+import Advisories from './pages/Advisories'
+import Logs from './pages/Logs'
 import './App.css'
 
 function App() {
   return (
-    <>
-      <header className="app-header">
-        <div className="brand">
-          <h1>Gardiyan</h1>
-          <p>OSINT advisory and CVE aggregation platform</p>
-        </div>
-        <ThemeToggle />
-      </header>
-
-      <section id="center">
-        <div>
-          <h2>Dashboard</h2>
-          <p>API bağlantısı tamamlanınca burada canlı veriler görünecek.</p>
-        </div>
-      </section>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="sources" element={<Sources />} />
+          <Route path="crawl-jobs" element={<CrawlJobs />} />
+          <Route path="advisories" element={<Advisories />} />
+          <Route path="logs" element={<Logs />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
