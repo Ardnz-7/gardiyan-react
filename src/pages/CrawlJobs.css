@@ -10,6 +10,50 @@
   color: var(--text-primary);
 }
 
+.crawl-controls {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.crawl-new-button,
+.crawl-submit {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border: 1px solid var(--border-accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.crawl-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  padding: 12px 14px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.crawl-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.crawl-form select {
+  min-width: 220px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
 .jobs-list {
   display: flex;
   flex-direction: column;
@@ -47,17 +91,17 @@
   font-size: 0.85rem;
 }
 
-.job-status-running {
+.job-status-warning {
   background: var(--bg-warning);
   color: var(--text-warning);
 }
 
-.job-status-completed {
+.job-status-success {
   background: var(--bg-success);
   color: var(--text-success);
 }
 
-.job-status-error {
+.job-status-danger {
   background: var(--bg-danger);
   color: var(--text-danger);
 }
@@ -79,4 +123,19 @@
   margin-top: 8px;
   color: var(--text-secondary);
   font-size: 0.95rem;
+}
+
+.job-error,
+.job-empty {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
+.job-error {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+  border-color: var(--border-accent);
 }
