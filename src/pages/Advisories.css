@@ -1,0 +1,143 @@
+.advisories-page {
+  display: flex;
+  gap: 0;
+  text-align: left;
+}
+
+.left-col {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid var(--border);
+  padding-right: 20px;
+}
+
+.search-wrap {
+  padding: 6px 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-1);
+  color: var(--text-primary);
+}
+
+.advisory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  max-height: calc(100vh - 140px);
+}
+
+.advisory-card {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.advisory-card.selected {
+  background: var(--bg-accent);
+  border: 1px solid var(--border-accent);
+}
+
+.advisory-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.advisory-sub {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.right-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 24px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-title {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.badge.critical {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+}
+
+.badge.high {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+
+.badge.medium {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+
+.meta-line {
+  color: var(--text-secondary);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.info-key {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.info-val {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.summary p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.external-link a {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.external-link a:hover {
+  opacity: 0.8;
+}
