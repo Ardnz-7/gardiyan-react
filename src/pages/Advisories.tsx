@@ -1,68 +1,93 @@
-import React, { useState } from 'react';
-import './Advisories.css';
+import { useEffect, useMemo, useState } from 'react'
+import { getAdvisories, type Advisory } from '../api/client'
+import './Advisories.css'
 
-type Advisory = {
-  title: string;
-  cve: string;
-  source: string;
-  severity: 'Critical' | 'High' | 'Medium';
-  published: string;
-  collected: string;
-  org: string;
-  product: string;
-  summary: string;
-  url?: string;
-};
+const emptyText = '—'
 
-const MOCK: Advisory[] = [
-  {
-    title: 'Remote code execution in libX',
-    cve: 'CVE-2026-4821',
-    source: 'NVD',
-    severity: 'Critical',
-    published: '2026-08-10',
-    collected: '2026-08-11',
-    org: 'National Vulnerability Database',
-    product: 'libX v2.3.1',
-    summary:
-      'libX kütüphanesinde kimlik doğrulama gerektirmeyen uzaktan kod çalıştırma açığı bulundu. Saldırgan özel hazırlanmış bir istekle sunucu üzerinde rastgele kod çalıştırabilir.',
-    url: '#',
-  },
-  {
-    title: 'Auth bypass in service Y',
-    cve: 'CVE-2026-4819',
-    source: 'CISA',
-    severity: 'High',
-    published: '2026-08-09',
-    collected: '2026-08-11',
-    org: 'CISA',
-    product: 'Service Y',
-    summary: 'Kimlik doğrulama mekanizmasını atlatan bir güvenlik açığı tespit edildi.',
-    url: '#',
-  },
-  {
-    title: 'Info disclosure in plugin Z',
-    cve: 'CVE-2026-4801',
-    source: 'Vendor X',
-    severity: 'Medium',
-    published: '2026-08-08',
-    collected: '2026-08-10',
-    org: 'Vendor X',
-    product: 'Plugin Z v1.0',
-    summary: 'Hassas bilgilerin yetkisiz erişime açık olduğu bir açık bulundu.',
-    url: '#',
-  },
-];
+function formatDate(value: string | null | undefined) {
+  if (!value) return emptyText
 
-function severityClass(s: Advisory['severity']) {
-  return s.toLowerCase();
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString()
 }
 
-const Advisories: React.FC = () => {
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const [query] = useState<string>('');
+function formatValue(value: string | null | undefined) {
+  return value && value.trim() ? value : emptyText
+}
 
-  const selected = MOCK[selectedIndex];
+function severityClass(value: string | null | undefined) {
+  const normalized = (value ?? '').trim().toLowerCase()
+
+  switch (normalized) {
+    case 'critical':
+      return 'critical'
+    case 'high':
+      return 'high'
+    case 'medium':
+      return 'medium'
+    case 'low':
+      return 'low'
+    default:
+      return 'unknown'
+  }
+}
+
+export default function Advisories() {
+  const [advisories, setAdvisories] = useState<Advisory[]>([])
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    const loadAdvisories = async () => {
+      setLoading(true)
+      setErrorMessage('')
+
+      try {
+        const data = await getAdvisories()
+        setAdvisories(data)
+        setSelectedId((current) => {
+          if (data.length === 0) return null
+          if (!current || !data.some((item) => item.id === current)) {
+            return data[0].id
+          }
+          return current
+        })
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to load advisories.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadAdvisories()
+  }, [])
+
+  const filteredAdvisories = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    if (!normalizedQuery) {
+      return advisories
+    }
+
+    return advisories.filter((item) => {
+      const haystack = [item.title, item.cve, item.product]
+        .filter((value): value is string => Boolean(value))
+        .join(' ')
+        .toLowerCase()
+
+      return haystack.includes(normalizedQuery)
+    })
+  }, [advisories, query])
+
+  useEffect(() => {
+    if (!filteredAdvisories.some((item) => item.id === selectedId)) {
+      setSelectedId(filteredAdvisories[0]?.id ?? null)
+    }
+  }, [filteredAdvisories, selectedId])
+
+  const selected = filteredAdvisories.find((item) => item.id === selectedId) ?? null
 
   return (
     <div className="advisories-page">
@@ -70,63 +95,86 @@ const Advisories: React.FC = () => {
         <div className="search-wrap">
           <input
             className="search-input"
-            placeholder="Ara (CVE, ürün...)"
+            placeholder="Ara (CVE, ürün, başlık...)"
             value={query}
-            onChange={() => {}}
+            onChange={(event) => setQuery(event.target.value)}
           />
         </div>
 
-        <div className="advisory-list">
-          {MOCK.map((a, i) => (
-            <div
-              key={a.cve}
-              className={`advisory-card ${i === selectedIndex ? 'selected' : ''}`}
-              onClick={() => setSelectedIndex(i)}
-            >
-              <div className="advisory-title">{a.title}</div>
-              <div className="advisory-sub">{a.cve} · {a.source}</div>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="advisories-empty">Yükleniyor...</div>
+        ) : errorMessage ? (
+          <div className="advisories-error">{errorMessage}</div>
+        ) : filteredAdvisories.length === 0 ? (
+          <div className="advisories-empty">Henüz güvenlik uyarısı bulunmuyor.</div>
+        ) : (
+          <div className="advisory-list">
+            {filteredAdvisories.map((item) => (
+              <div
+                key={item.id}
+                className={`advisory-card ${item.id === selectedId ? 'selected' : ''}`}
+                onClick={() => setSelectedId(item.id)}
+              >
+                <div className="advisory-title">{formatValue(item.title)}</div>
+                <div className="advisory-sub">
+                  {formatValue(item.cve)} · {formatValue(item.source_domain)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="right-col">
-        <div className="detail-header">
-          <h2 className="detail-title">{selected.title}</h2>
-          <span className={`badge ${severityClass(selected.severity)}`}>{selected.severity}</span>
-        </div>
+        {selected ? (
+          <>
+            <div className="detail-header">
+              <h2 className="detail-title">{formatValue(selected.title)}</h2>
+              <span className={`badge ${severityClass(selected.severity)}`}>
+                {selected.severity ? formatValue(selected.severity) : 'Bilinmiyor'}
+              </span>
+            </div>
 
-        <div className="meta-line">
-          <span>{selected.cve}</span>
-          <span>·</span>
-          <span>{selected.source}</span>
-          <span>·</span>
-          <span>Yayın: {selected.published}</span>
-          <span>·</span>
-          <span>Toplandı: {selected.collected}</span>
-        </div>
+            <div className="meta-line">
+              <span>{formatValue(selected.cve)}</span>
+              <span>·</span>
+              <span>{formatValue(selected.source_domain)}</span>
+              <span>·</span>
+              <span>Yayın: {formatDate(selected.publication_date)}</span>
+              <span>·</span>
+              <span>Toplandı: {formatDate(selected.collection_date)}</span>
+            </div>
 
-        <div className="info-grid">
-          <div className="info-item">
-            <div className="info-key">Organization</div>
-            <div className="info-val">{selected.org}</div>
-          </div>
-          <div className="info-item">
-            <div className="info-key">Product</div>
-            <div className="info-val">{selected.product}</div>
-          </div>
-        </div>
+            <div className="info-grid">
+              <div className="info-item">
+                <div className="info-key">Organization</div>
+                <div className="info-val">{formatValue(selected.organization)}</div>
+              </div>
+              <div className="info-item">
+                <div className="info-key">Product</div>
+                <div className="info-val">{formatValue(selected.product)}</div>
+              </div>
+            </div>
 
-        <div className="summary">
-          <p>{selected.summary}</p>
-        </div>
+            <div className="summary">
+              <p>{formatValue(selected.summary)}</p>
+            </div>
 
-        <div className="external-link">
-          <a href={selected.url} target="_blank" rel="noreferrer">↗ Orijinal kaynağı görüntüle</a>
-        </div>
+            <div className="external-link">
+              {selected.url ? (
+                <a href={selected.url} target="_blank" rel="noreferrer">
+                  ↗ Orijinal kaynağı görüntüle
+                </a>
+              ) : (
+                <span>Orijinal kaynak mevcut değil.</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="advisories-empty detail-empty">Seçili bir güvenlik uyarısı yok.</div>
+        )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Advisories;

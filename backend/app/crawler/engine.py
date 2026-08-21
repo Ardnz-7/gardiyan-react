@@ -9,7 +9,7 @@ import httpx
 from app.database import SessionLocal, engine
 from app.models.models import Advisory, Base, CrawlJob, CrawlLog, Source
 from app.crawler.base import Parser
-from app.crawler.robots import check_robots_allowed
+from app.crawler.robots import check_robots_allowed, is_known_public_feed
 
 Base.metadata.create_all(bind=engine)
 
@@ -146,8 +146,16 @@ class CrawlEngine:
             self.visited_urls.add(url)
 
             request_path = '/' if url == self.source.base_url else url.replace(self.source.base_url, '', 1)
-            robots_allowed = check_robots_allowed(self.source.base_url, request_path, 'GardiyanBot')
-            self._log(f'robots.txt check: allowed={robots_allowed} for {url}', 'INFO', 'crawler')
+            if is_known_public_feed(url):
+                robots_allowed = True
+                self._log(
+                    'robots.txt inaccessible (403); URL is in documented public-feed allowlist, proceeding',
+                    'INFO',
+                    'crawler',
+                )
+            else:
+                robots_allowed = check_robots_allowed(self.source.base_url, request_path, 'GardiyanBot')
+                self._log(f'robots.txt check: allowed={robots_allowed} for {url}', 'INFO', 'crawler')
             if not robots_allowed:
                 self.job.error_count += 1
                 self._log(f'Blocked by robots.txt: {url}', 'WARN', 'crawler')

@@ -3,6 +3,8 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.crawler.engine import CrawlEngine
+from app.crawler.parsers.cisa_kev_parser import CISAKEVParser
+from app.crawler.parsers.nvd_parser import NVDParser
 from app.crawler.parsers.test_parser import TestParser
 from app.database import SessionLocal
 from app.models.models import CrawlJob, Source
@@ -20,7 +22,15 @@ def _run_crawl_in_background(job_id: int) -> None:
         source = db.query(Source).filter(Source.id == job.source_id).first()
         if source is None:
             return
-        engine = CrawlEngine(source=source, parser=TestParser(), job_id=job.id)
+        base_url = source.base_url or ''
+        # Simple domain lookup for now; this is intentionally not a plugin registry.
+        if 'nvd.nist.gov' in base_url:
+            parser = NVDParser()
+        elif 'cisa.gov' in base_url:
+            parser = CISAKEVParser()
+        else:
+            parser = TestParser()
+        engine = CrawlEngine(source=source, parser=parser, job_id=job.id)
         engine.run()
         engine.close()
     finally:

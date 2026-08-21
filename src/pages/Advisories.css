@@ -97,6 +97,17 @@
   color: var(--text-accent);
 }
 
+.badge.low {
+  background: var(--bg-success);
+  color: var(--text-success);
+}
+
+.badge.unknown {
+  background: var(--bg-surface-1);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
 .meta-line {
   color: var(--text-secondary);
   display: flex;
@@ -140,4 +151,24 @@
 
 .external-link a:hover {
   opacity: 0.8;
+}
+
+.advisories-error,
+.advisories-empty {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
+.advisories-error {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+  border-color: var(--border-accent);
+}
+
+.detail-empty {
+  align-self: center;
+  width: 100%;
 }
