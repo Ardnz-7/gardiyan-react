@@ -99,20 +99,37 @@ class CrawlEngine:
         if self.job is None:
             raise RuntimeError('Crawl job has not been created')
 
-        advisory = Advisory(
-            crawl_job_id=self.job.id,
-            title=str(record.get('title') or 'Untitled advisory'),
-            organization=record.get('organization'),
-            publication_date=self._normalize_date(record.get('publication_date')),
-            url=record.get('url'),
-            source_domain=record.get('source_domain'),
-            cve=record.get('cve'),
-            product=record.get('product'),
-            severity=record.get('severity'),
-            summary=record.get('summary'),
-            collection_date=self._normalize_collection_date(record.get('collection_date')),
-        )
-        self.session.add(advisory)
+        cve = record.get('cve') or None
+        source_domain = record.get('source_domain')
+        advisory = None
+        if cve:
+            advisory = (
+                self.session.query(Advisory)
+                .filter(Advisory.cve == cve, Advisory.source_domain == source_domain)
+                .first()
+            )
+
+        values = {
+            'crawl_job_id': self.job.id,
+            'title': str(record.get('title') or 'Untitled advisory'),
+            'organization': record.get('organization'),
+            'publication_date': self._normalize_date(record.get('publication_date')),
+            'url': record.get('url'),
+            'source_domain': source_domain,
+            'cve': cve,
+            'product': record.get('product'),
+            'severity': record.get('severity'),
+            'summary': record.get('summary'),
+            'collection_date': self._normalize_collection_date(record.get('collection_date')),
+        }
+
+        if advisory is not None:
+            for field, value in values.items():
+                setattr(advisory, field, value)
+            self._log('advisory updated (existing CVE)', 'INFO', 'crawler')
+        else:
+            self.session.add(Advisory(**values))
+            self._log('advisory created (new)', 'INFO', 'crawler')
 
     def run(self, urls: list[str] | None = None) -> CrawlJob:
         self.started_at = datetime.utcnow()

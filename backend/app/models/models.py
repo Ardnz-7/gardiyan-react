@@ -9,6 +9,7 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     JSON,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -51,6 +52,9 @@ class CrawlJob(Base):
 
 class Advisory(Base):
     __tablename__ = "advisory"
+    __table_args__ = (
+        UniqueConstraint('cve', 'source_domain', name='uq_advisory_cve_source_domain'),
+    )
 
     id = Column(Integer, primary_key=True)
     crawl_job_id = Column(Integer, ForeignKey("crawl_job.id"), nullable=False)
