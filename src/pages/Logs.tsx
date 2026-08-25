@@ -1,33 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getLogs, type CrawlLog } from '../api/client';
 import './Logs.css';
-
-type LogLevel = 'INFO' | 'WARN' | 'ERROR';
-
-type LogEntry = {
-  timestamp: string;
-  level: LogLevel;
-  source: string;
-  message: string;
-};
-
-const LOGS: LogEntry[] = [
-  { timestamp: '14:32:01', level: 'INFO', source: 'parser', message: 'NVD taraması başladı' },
-  { timestamp: '14:32:04', level: 'INFO', source: 'http_client', message: '128 sayfa alındı' },
-  { timestamp: '14:32:06', level: 'WARN', source: 'parser', message: 'Eksik CVE alanı, atlanıyor' },
-  { timestamp: '09:05:12', level: 'ERROR', source: 'http_client', message: 'Vendor X blog: 403 Forbidden' },
-];
 
 const FILTERS = ['Tüm seviyeler', 'Error', 'Warning', 'Info'] as const;
 
+function formatTimestamp(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
 export default function Logs() {
+  const [logs, setLogs] = useState<CrawlLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<(typeof FILTERS)[number]>('Tüm seviyeler');
 
-  const filteredLogs = LOGS.filter((entry) => {
+  useEffect(() => {
+    const loadLogs = async () => {
+      setLoading(true);
+      setErrorMessage('');
+
+      try {
+        const data = await getLogs();
+        setLogs(data);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to load logs.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadLogs();
+  }, []);
+
+  const filteredLogs = logs.filter((entry) => {
     if (selectedLevel === 'Tüm seviyeler') return true;
 
-    if (selectedLevel === 'Error') return entry.level === 'ERROR';
-    if (selectedLevel === 'Warning') return entry.level === 'WARN';
-    return entry.level === 'INFO';
+    const level = (entry.log_level ?? '').toUpperCase();
+    if (selectedLevel === 'Error') return level === 'ERROR';
+    if (selectedLevel === 'Warning') return level === 'WARN';
+    return level === 'INFO';
   });
 
   return (
@@ -48,15 +60,23 @@ export default function Logs() {
         </select>
       </div>
 
+      {errorMessage && <div className="logs-error">{errorMessage}</div>}
+
       <div className="logs-stream" role="log" aria-live="polite">
-        {filteredLogs.map((log, index) => (
-          <div key={`${log.timestamp}-${log.source}-${index}`} className={`log-row ${log.level.toLowerCase()}`}>
-            <div className="log-timestamp">{log.timestamp}</div>
-            <div className="log-level">{log.level}</div>
-            <div className="log-source">{log.source}</div>
-            <div className="log-message">{log.message}</div>
-          </div>
-        ))}
+        {loading ? (
+          <div className="logs-empty">Yükleniyor...</div>
+        ) : filteredLogs.length === 0 ? (
+          <div className="logs-empty">Henüz log kaydı yok.</div>
+        ) : (
+          filteredLogs.map((log) => (
+            <div key={log.id} className={`log-row ${(log.log_level ?? '').toLowerCase()}`}>
+              <div className="log-timestamp">{formatTimestamp(log.timestamp)}</div>
+              <div className="log-level">{log.log_level ?? '—'}</div>
+              <div className="log-source">{log.source ?? '—'}</div>
+              <div className="log-message">{log.message ?? '—'}</div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

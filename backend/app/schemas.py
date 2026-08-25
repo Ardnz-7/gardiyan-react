@@ -60,6 +60,17 @@ class AdvisoryRead(BaseModel):
     collection_date: datetime
 
 
+class CrawlLogRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    crawl_job_id: int
+    timestamp: datetime
+    log_level: Optional[str] = None
+    message: Optional[str] = None
+    source: Optional[str] = None
+
+
 class HealthResponse(BaseModel):
     status: str
     database: str

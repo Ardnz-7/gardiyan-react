@@ -24,6 +24,20 @@
   color: var(--text-primary);
 }
 
+.logs-error,
+.logs-empty {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-accent);
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+
+.logs-empty {
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
 .logs-stream {
   display: flex;
   flex-direction: column;

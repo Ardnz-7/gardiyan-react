@@ -46,6 +46,15 @@ export type Advisory = {
   collection_date: string
 }
 
+export type CrawlLog = {
+  id: number
+  crawl_job_id: number
+  timestamp: string
+  log_level: string | null
+  message: string | null
+  source: string | null
+}
+
 export type Stats = {
   total_advisories: number
   by_severity: Record<string, number>
@@ -123,4 +132,10 @@ export async function getAdvisories(
 
 export async function getStats(): Promise<Stats> {
   return request<Stats>('/api/stats')
+}
+
+export async function getLogs(
+  params?: Record<string, string | number | boolean | null | undefined>,
+): Promise<CrawlLog[]> {
+  return request<CrawlLog[]>('/api/logs', {}, params)
 }
