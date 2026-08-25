@@ -16,7 +16,12 @@ def get_db():
         db.close()
 
 
-@router.get('/api/sources', response_model=list[SourceRead])
+@router.get(
+    '/api/sources',
+    response_model=list[SourceRead],
+    summary='List sources',
+    description='Returns all configured crawl sources, ordered by ID ascending.',
+)
 def list_sources():
     db = SessionLocal()
     try:
@@ -25,7 +30,12 @@ def list_sources():
         db.close()
 
 
-@router.post('/api/sources', response_model=SourceRead)
+@router.post(
+    '/api/sources',
+    response_model=SourceRead,
+    summary='Create a source',
+    description='Creates a new crawl source with a name, base URL, enabled flag, and request delay.',
+)
 def create_source(payload: SourceCreate):
     db = SessionLocal()
     try:

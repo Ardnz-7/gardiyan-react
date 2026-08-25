@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 from app.crawler.engine import CrawlEngine
 from app.crawler.parsers.cisa_kev_parser import CISAKEVParser
@@ -37,7 +37,12 @@ def _run_crawl_in_background(job_id: int) -> None:
         db.close()
 
 
-@router.post('/api/crawls', response_model=CrawlCreateResponse)
+@router.post(
+    '/api/crawls',
+    response_model=CrawlCreateResponse,
+    summary='Start a crawl job',
+    description='Queues a new crawl job for the given source_id and runs it in the background.',
+)
 def create_crawl(payload: CrawlRequest, background_tasks: BackgroundTasks):
     db = SessionLocal()
     try:
@@ -65,16 +70,29 @@ def create_crawl(payload: CrawlRequest, background_tasks: BackgroundTasks):
         db.close()
 
 
-@router.get('/api/crawls', response_model=list[CrawlJobRead])
-def list_crawls():
+@router.get(
+    '/api/crawls',
+    response_model=list[CrawlJobRead],
+    summary='List crawl jobs',
+    description='Returns a paginated list of crawl jobs, most recent first. Supports pagination via limit/offset.',
+)
+def list_crawls(
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+):
     db = SessionLocal()
     try:
-        return db.query(CrawlJob).order_by(CrawlJob.id.desc()).all()
+        return db.query(CrawlJob).order_by(CrawlJob.id.desc()).limit(limit).offset(offset).all()
     finally:
         db.close()
 
 
-@router.get('/api/crawls/{job_id}', response_model=CrawlJobRead)
+@router.get(
+    '/api/crawls/{job_id}',
+    response_model=CrawlJobRead,
+    summary='Get a crawl job by ID',
+    description='Returns a single crawl job by its ID, or a 404 if it does not exist.',
+)
 def get_crawl(job_id: int):
     db = SessionLocal()
     try:
@@ -86,7 +104,12 @@ def get_crawl(job_id: int):
         db.close()
 
 
-@router.post('/api/crawls/{job_id}/stop', response_model=CrawlJobRead)
+@router.post(
+    '/api/crawls/{job_id}/stop',
+    response_model=CrawlJobRead,
+    summary='Stop a crawl job',
+    description='Marks the crawl job as stopped. Does not interrupt an in-flight background crawl.',
+)
 def stop_crawl(job_id: int):
     db = SessionLocal()
     try:

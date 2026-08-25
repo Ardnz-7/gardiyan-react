@@ -7,7 +7,15 @@ from app.schemas import CrawlLogRead
 router = APIRouter()
 
 
-@router.get('/api/logs', response_model=list[CrawlLogRead])
+@router.get(
+    '/api/logs',
+    response_model=list[CrawlLogRead],
+    summary='List crawl logs',
+    description=(
+        'Returns crawl log entries ordered by timestamp descending (most recent first). '
+        'Supports filtering by log_level (case-insensitive) and crawl_job_id.'
+    ),
+)
 def list_logs(
     level: str | None = Query(default=None),
     crawl_job_id: int | None = Query(default=None),
