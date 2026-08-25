@@ -76,6 +76,11 @@ def update_source(source_id: int, payload: SourceUpdate):
         db.commit()
         db.refresh(source)
         return source
+    except HTTPException:
+        raise
+    except Exception as exc:  # pragma: no cover
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     finally:
         db.close()
 

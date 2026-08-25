@@ -69,6 +69,59 @@ Example response (201-equivalent body, status 200):
 ```
 Returns `400` with `{"detail": "<error message>"}` if creation fails (e.g. duplicate name).
 
+### PUT /api/sources/{source_id}
+Partially updates a source; only fields present in the request body are overwritten.
+
+Path parameter: `source_id` (int).
+
+Body (JSON, all fields optional):
+| Field | Type | Required |
+|---|---|---|
+| name | string | no |
+| base_url | string | no |
+| enabled | boolean | no |
+| request_delay | int | no |
+
+Example response:
+```json
+{
+  "id": 1,
+  "name": "NVD (renamed)",
+  "base_url": "https://example.com",
+  "enabled": true,
+  "request_delay": 2,
+  "created_at": "2026-08-17T22:04:43.220972",
+  "updated_at": "2026-08-25T22:52:26.846222",
+  "last_crawl_at": null
+}
+```
+Returns `404` with `{"detail": "Source not found"}` if the ID doesn't exist. Returns `400` with `{"detail": "<error message>"}` if the update fails (e.g. duplicate name), same as `POST /api/sources`.
+
+### PATCH /api/sources/{source_id}/status
+Sets the enabled flag on a source.
+
+Path parameter: `source_id` (int).
+
+Body (JSON):
+| Field | Type | Required |
+|---|---|---|
+| enabled | boolean | yes |
+
+Example response:
+```json
+{
+  "id": 1,
+  "name": "NVD (renamed)",
+  "base_url": "https://example.com",
+  "enabled": false,
+  "request_delay": 2,
+  "created_at": "2026-08-17T22:04:43.220972",
+  "updated_at": "2026-08-25T22:52:28.623491",
+  "last_crawl_at": null
+}
+```
+Returns `404` with `{"detail": "Source not found"}` if the ID doesn't exist.
+
 ## Crawls
 
 ### POST /api/crawls
@@ -174,6 +227,16 @@ Path parameter: `advisory_id` (int).
 Example response: same shape as one item from `GET /api/advisories` above.
 Returns `404` with `{"detail": "Advisory not found"}` if the ID doesn't exist.
 
+### DELETE /api/advisories/{advisory_id}
+Deletes a single advisory by its ID.
+
+Path parameter: `advisory_id` (int).
+
+No request body.
+
+Response: `204 No Content` on success (empty body).
+Returns `404` with `{"detail": "Advisory not found"}` if the ID doesn't exist.
+
 ## Logs
 
 ### GET /api/logs
@@ -201,6 +264,8 @@ Example response:
 
 ## Stats
 
+> **Note:** `GET /api/stats` and `GET /api/statistics/summary` (see [Statistics](#statistics) below) return the exact same response shape and currently coexist. `GET /api/stats` predates the `/api/statistics/summary` path required by spec and was kept in place, unchanged, purely for backward compatibility so the existing frontend (which calls `/api/stats`) doesn't break. New consumers should prefer `GET /api/statistics/summary`.
+
 ### GET /api/stats
 Returns aggregate counts: total advisories, a breakdown by severity (fixed set: critical/high/medium/low, matched case-insensitively), active (enabled) source count, and completed crawl count. Not backed by a Pydantic response model in code — shape shown below reflects the actual dict returned.
 
@@ -219,4 +284,41 @@ Example response:
   "active_sources": 5,
   "completed_crawls": 18
 }
+```
+
+## Statistics
+
+### GET /api/statistics/summary
+Returns the same aggregate counts as `GET /api/stats` above (total advisories, severity breakdown, active source count, completed crawl count), backed by the `StatsResponse` Pydantic model.
+
+No parameters.
+
+Example response:
+```json
+{
+  "total_advisories": 66,
+  "by_severity": {
+    "critical": 34,
+    "high": 7,
+    "medium": 0,
+    "low": 0
+  },
+  "active_sources": 5,
+  "completed_crawls": 19
+}
+```
+
+### GET /api/statistics/timeline
+Returns advisory counts grouped by collection date (day), ordered by date ascending. Not backed by a Pydantic response model in code.
+
+No parameters.
+
+Example response:
+```json
+[
+  { "date": "2026-08-18", "count": 1 },
+  { "date": "2026-08-20", "count": 25 },
+  { "date": "2026-08-21", "count": 20 },
+  { "date": "2026-08-25", "count": 20 }
+]
 ```
