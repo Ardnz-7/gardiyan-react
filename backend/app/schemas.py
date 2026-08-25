@@ -15,6 +15,17 @@ class CrawlRequest(BaseModel):
     source_id: int
 
 
+class SourceUpdate(BaseModel):
+    name: Optional[str] = None
+    base_url: Optional[str] = None
+    enabled: Optional[bool] = None
+    request_delay: Optional[int] = None
+
+
+class SourceStatusUpdate(BaseModel):
+    enabled: bool
+
+
 class SourceRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

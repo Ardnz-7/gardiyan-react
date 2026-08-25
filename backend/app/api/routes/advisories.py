@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 
 from app.database import SessionLocal
 from app.models.models import Advisory
@@ -58,5 +58,24 @@ def get_advisory(advisory_id: int):
         if advisory is None:
             raise HTTPException(status_code=404, detail='Advisory not found')
         return advisory
+    finally:
+        db.close()
+
+
+@router.delete(
+    '/api/advisories/{advisory_id}',
+    status_code=204,
+    summary='Delete an advisory',
+    description='Deletes a single advisory by its ID, or returns a 404 if it does not exist.',
+)
+def delete_advisory(advisory_id: int):
+    db = SessionLocal()
+    try:
+        advisory = db.query(Advisory).filter(Advisory.id == advisory_id).first()
+        if advisory is None:
+            raise HTTPException(status_code=404, detail='Advisory not found')
+        db.delete(advisory)
+        db.commit()
+        return Response(status_code=204)
     finally:
         db.close()

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.models import Source
-from app.schemas import SourceCreate, SourceRead
+from app.schemas import SourceCreate, SourceRead, SourceStatusUpdate, SourceUpdate
 
 router = APIRouter()
 
@@ -52,5 +52,50 @@ def create_source(payload: SourceCreate):
     except Exception as exc:  # pragma: no cover
         db.rollback()
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        db.close()
+
+
+@router.put(
+    '/api/sources/{source_id}',
+    response_model=SourceRead,
+    summary='Update a source',
+    description='Partially updates a source; only fields present in the request body are overwritten.',
+)
+def update_source(source_id: int, payload: SourceUpdate):
+    db = SessionLocal()
+    try:
+        source = db.query(Source).filter(Source.id == source_id).first()
+        if source is None:
+            raise HTTPException(status_code=404, detail='Source not found')
+
+        updates = payload.model_dump(exclude_unset=True)
+        for field, value in updates.items():
+            setattr(source, field, value)
+
+        db.commit()
+        db.refresh(source)
+        return source
+    finally:
+        db.close()
+
+
+@router.patch(
+    '/api/sources/{source_id}/status',
+    response_model=SourceRead,
+    summary='Update a source status',
+    description='Sets the enabled flag on a source.',
+)
+def update_source_status(source_id: int, payload: SourceStatusUpdate):
+    db = SessionLocal()
+    try:
+        source = db.query(Source).filter(Source.id == source_id).first()
+        if source is None:
+            raise HTTPException(status_code=404, detail='Source not found')
+
+        source.enabled = payload.enabled
+        db.commit()
+        db.refresh(source)
+        return source
     finally:
         db.close()
