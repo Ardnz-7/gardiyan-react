@@ -29,7 +29,7 @@ This documents the current frontend screens as actually built (`src/pages/*.tsx`
 **Data displayed:** A table of sources from `GET /api/sources` — Name, Base URL (or "—"), Status (enabled/disabled dot + text), Last crawl (formatted via `toLocaleString()`, or "—" if never crawled).
 
 **Actions:**
-- A form to add a new source: Name (text), Base URL (text), Request delay in ms (number, min 0, step 100), Enabled (checkbox, defaults checked). Submitting calls `POST /api/sources`, then reloads the list and resets the form.
+- A form to add a new source: Name (text), Base URL (text), Request delay in seconds (number, min 0, step 1), Enabled (checkbox, defaults checked). Submitting calls `POST /api/sources`, then reloads the list and resets the form.
 - Submit button reads "+ Add source", disabled and shows "Saving..." while the request is in flight.
 
 **States handled:**

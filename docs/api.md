@@ -35,7 +35,7 @@ Example response:
     "name": "NVD",
     "base_url": "https://services.nvd.nist.gov",
     "enabled": true,
-    "request_delay": 2000,
+    "request_delay": 2,
     "created_at": "2026-08-17T21:50:00.123456",
     "updated_at": "2026-08-17T21:50:00.123456",
     "last_crawl_at": "2026-08-21T13:14:15.070000"
@@ -61,7 +61,7 @@ Example response (201-equivalent body, status 200):
   "name": "CISA KEV",
   "base_url": "https://www.cisa.gov",
   "enabled": true,
-  "request_delay": 2000,
+  "request_delay": 2,
   "created_at": "2026-08-26T00:10:00.000000",
   "updated_at": "2026-08-26T00:10:00.000000",
   "last_crawl_at": null

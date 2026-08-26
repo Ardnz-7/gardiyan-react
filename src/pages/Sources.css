@@ -116,6 +116,29 @@
   gap: 8px;
 }
 
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.status-toggle:hover:not(:disabled) {
+  background: var(--bg-surface-1);
+}
+
+.status-toggle:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .status-dot {
   width: 10px;
   height: 10px;
@@ -138,4 +161,80 @@
 .actions {
   text-align: right;
   color: var(--text-muted);
+}
+
+.edit-button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.edit-button:hover {
+  background: var(--bg-surface-1);
+}
+
+.editing-row td {
+  vertical-align: middle;
+}
+
+.edit-fields {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-input {
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  min-width: 0;
+  flex: 1 1 140px;
+}
+
+.edit-input-delay {
+  flex: 0 1 90px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.edit-save,
+.edit-cancel {
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.edit-save {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border: 1px solid var(--border-accent);
+}
+
+.edit-save:disabled,
+.edit-cancel:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.edit-cancel {
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.edit-cancel:hover:not(:disabled) {
+  background: var(--bg-surface-1);
 }

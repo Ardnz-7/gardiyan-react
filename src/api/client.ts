@@ -18,6 +18,8 @@ export type CreateSourceInput = {
   request_delay?: number
 }
 
+export type UpdateSourceInput = Partial<CreateSourceInput>
+
 export type CrawlJob = {
   id: number
   source_id: number
@@ -106,6 +108,20 @@ export async function createSource(data: CreateSourceInput): Promise<Source> {
   return request<Source>('/api/sources', {
     method: 'POST',
     body: JSON.stringify(data),
+  })
+}
+
+export async function updateSource(id: number, data: UpdateSourceInput): Promise<Source> {
+  return request<Source>(`/api/sources/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updateSourceStatus(id: number, enabled: boolean): Promise<Source> {
+  return request<Source>(`/api/sources/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ enabled }),
   })
 }
 
