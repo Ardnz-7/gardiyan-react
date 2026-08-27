@@ -40,32 +40,64 @@ def _run_crawl_in_background(job_id: int) -> None:
 @router.post(
     '/api/crawls',
     response_model=CrawlCreateResponse,
-    summary='Start a crawl job',
-    description='Queues a new crawl job for the given source_id and runs it in the background.',
+    response_model_exclude_none=True,
+    summary='Start one or more crawl jobs',
+    description=(
+        'Queues a new crawl job per source and runs each in the background. Accepts either a single '
+        'source_id (legacy) or a source_ids list; also accepts optional keywords, date_from, and '
+        'maximum_pages, which are stored on each job but not yet used by the crawler engine. '
+        'Returns {"job_id": N, "status": "queued"} when a single legacy source_id was given, or '
+        '{"job_ids": [...], "status": "queued"} when source_ids was given.'
+    ),
 )
 def create_crawl(payload: CrawlRequest, background_tasks: BackgroundTasks):
     db = SessionLocal()
     try:
-        source = db.query(Source).filter(Source.id == payload.source_id).first()
-        if source is None:
-            raise HTTPException(status_code=404, detail='Source not found')
+        if payload.source_ids:
+            target_ids = payload.source_ids
+        elif payload.source_id is not None:
+            target_ids = [payload.source_id]
+        else:
+            raise HTTPException(status_code=400, detail='source_id or source_ids is required')
 
-        job = CrawlJob(
-            source_id=source.id,
-            status='queued',
-            progress=0,
-            started_at=datetime.utcnow(),
-            pages_visited=0,
-            records_extracted=0,
-            error_count=0,
-            configuration={'base_url': source.base_url},
-        )
-        db.add(job)
-        db.commit()
-        db.refresh(job)
+        sources = db.query(Source).filter(Source.id.in_(target_ids)).all()
+        found_ids = {source.id for source in sources}
+        missing_ids = [source_id for source_id in target_ids if source_id not in found_ids]
+        if missing_ids:
+            raise HTTPException(status_code=404, detail=f'Source(s) not found: {missing_ids}')
 
-        background_tasks.add_task(_run_crawl_in_background, job.id)
-        return {'job_id': job.id, 'status': 'queued'}
+        sources_by_id = {source.id: source for source in sources}
+        job_ids: list[int] = []
+
+        for source_id in target_ids:
+            source = sources_by_id[source_id]
+            job = CrawlJob(
+                source_id=source.id,
+                status='queued',
+                progress=0,
+                started_at=datetime.utcnow(),
+                pages_visited=0,
+                records_extracted=0,
+                error_count=0,
+                configuration={
+                    'base_url': source.base_url,
+                    # keywords/date_from/maximum_pages are accepted and persisted for forward
+                    # compatibility, but the crawler engine does not read or apply them yet.
+                    'keywords': payload.keywords,
+                    'date_from': payload.date_from.isoformat() if payload.date_from else None,
+                    'maximum_pages': payload.maximum_pages,
+                },
+            )
+            db.add(job)
+            db.commit()
+            db.refresh(job)
+
+            background_tasks.add_task(_run_crawl_in_background, job.id)
+            job_ids.append(job.id)
+
+        if not payload.source_ids:
+            return {'job_id': job_ids[0], 'status': 'queued'}
+        return {'job_ids': job_ids, 'status': 'queued'}
     finally:
         db.close()
 

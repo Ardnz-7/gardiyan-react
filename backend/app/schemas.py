@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict
 
@@ -12,7 +12,11 @@ class SourceCreate(BaseModel):
 
 
 class CrawlRequest(BaseModel):
-    source_id: int
+    source_id: Optional[int] = None
+    source_ids: Optional[List[int]] = None
+    keywords: Optional[List[str]] = None
+    date_from: Optional[date] = None
+    maximum_pages: Optional[int] = None
 
 
 class SourceUpdate(BaseModel):
@@ -89,7 +93,8 @@ class HealthResponse(BaseModel):
 
 
 class CrawlCreateResponse(BaseModel):
-    job_id: int
+    job_id: Optional[int] = None
+    job_ids: Optional[List[int]] = None
     status: str
 
 
