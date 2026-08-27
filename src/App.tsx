@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Sources from './pages/Sources'
 import CrawlJobs from './pages/CrawlJobs'
+import CrawlDetails from './pages/CrawlDetails'
 import Advisories from './pages/Advisories'
 import Logs from './pages/Logs'
 import './App.css'
@@ -15,6 +16,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="sources" element={<Sources />} />
           <Route path="crawl-jobs" element={<CrawlJobs />} />
+          <Route path="crawl-jobs/:id" element={<CrawlDetails />} />
           <Route path="advisories" element={<Advisories />} />
           <Route path="logs" element={<Logs />} />
         </Route>

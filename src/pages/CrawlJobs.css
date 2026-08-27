@@ -107,11 +107,22 @@
   gap: 12px;
 }
 
+.job-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .job-card {
   background: var(--bg-surface-2);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
+  cursor: pointer;
+}
+
+.job-card-link:hover .job-card {
+  border-color: var(--border-accent);
 }
 
 .job-row {

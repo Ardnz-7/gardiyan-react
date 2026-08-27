@@ -1,0 +1,41 @@
+.crawl-details-back {
+  margin-bottom: 4px;
+}
+
+.crawl-details-back a {
+  color: var(--text-accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.crawl-details-back a:hover {
+  text-decoration: underline;
+}
+
+.crawl-details-actions {
+  margin-top: 12px;
+}
+
+.crawl-stop-button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-danger);
+  color: var(--text-danger);
+  border: 1px solid var(--border-accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.crawl-stop-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.crawl-details-logs-title {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+}
+
+.crawl-details-logs-title + .logs-stream .log-timestamp {
+  width: 160px;
+}

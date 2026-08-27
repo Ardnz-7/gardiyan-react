@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { getCrawlJobs, getSources, startCrawlMulti, type Source } from '../api/client'
 import './CrawlJobs.css'
 
@@ -217,38 +218,40 @@ export default function CrawlJobs() {
             const statusLabel = statusLabels[job.status] ?? job.status
 
             return (
-              <article key={job.id} className="job-card">
-                <div className="job-row">
-                  <div className="job-title">
-                    <div className="job-name">
-                      Source #{job.source_id} <span className="job-id"># {job.id}</span>
+              <Link key={job.id} to={`/crawl-jobs/${job.id}`} className="job-card-link">
+                <article className="job-card">
+                  <div className="job-row">
+                    <div className="job-title">
+                      <div className="job-name">
+                        Source #{job.source_id} <span className="job-id"># {job.id}</span>
+                      </div>
+                    </div>
+
+                    <div className={`job-status ${statusClass}`}>
+                      <span className="status-label">{statusLabel}</span>
                     </div>
                   </div>
 
-                  <div className={`job-status ${statusClass}`}>
-                    <span className="status-label">{statusLabel}</span>
-                  </div>
-                </div>
+                  {job.status === 'running' && (
+                    <>
+                      <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${job.progress}%` }} />
+                      </div>
+                      <div className="job-details">
+                        {job.pages_visited} sayfa · {job.records_extracted} kayıt · {job.progress}%
+                      </div>
+                    </>
+                  )}
 
-                {job.status === 'running' && (
-                  <>
-                    <div className="progress-track">
-                      <div className="progress-fill" style={{ width: `${job.progress}%` }} />
-                    </div>
+                  {job.status !== 'running' && (
                     <div className="job-details">
-                      {job.pages_visited} sayfa · {job.records_extracted} kayıt · {job.progress}%
+                      {job.pages_visited} sayfa · {job.records_extracted} kayıt · {job.error_count} hata · {' '}
+                      Başlangıç: {new Date(job.started_at).toLocaleString()}
+                      {job.completed_at ? ` · Bitiş: ${new Date(job.completed_at).toLocaleString()}` : ''}
                     </div>
-                  </>
-                )}
-
-                {job.status !== 'running' && (
-                  <div className="job-details">
-                    {job.pages_visited} sayfa · {job.records_extracted} kayıt · {job.error_count} hata · {' '}
-                    Başlangıç: {new Date(job.started_at).toLocaleString()}
-                    {job.completed_at ? ` · Bitiş: ${new Date(job.completed_at).toLocaleString()}` : ''}
-                  </div>
-                )}
-              </article>
+                  )}
+                </article>
+              </Link>
             )
           })
         )}

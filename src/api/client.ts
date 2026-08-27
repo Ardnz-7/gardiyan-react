@@ -133,6 +133,12 @@ export async function getCrawlJob(id: number): Promise<CrawlJob> {
   return request<CrawlJob>(`/api/crawls/${id}`)
 }
 
+export async function stopCrawl(id: number): Promise<CrawlJob> {
+  return request<CrawlJob>(`/api/crawls/${id}/stop`, {
+    method: 'POST',
+  })
+}
+
 export async function startCrawl(sourceId: number): Promise<{ job_id: number; status: string }> {
   return request<{ job_id: number; status: string }>('/api/crawls', {
     method: 'POST',
