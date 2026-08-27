@@ -13,6 +13,106 @@
   padding-right: 20px;
 }
 
+.filters-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.filter-field input,
+.filter-field select {
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-1);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.filter-date-row {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-date-row .filter-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-apply,
+.filter-clear {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filter-apply {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border: 1px solid var(--border-accent);
+}
+
+.filter-clear {
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.filter-clear:hover {
+  background: var(--bg-surface-1);
+}
+
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.result-count {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.export-csv {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.export-csv:hover:not(:disabled) {
+  background: var(--bg-surface-1);
+}
+
+.export-csv:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .search-wrap {
   padding: 6px 0;
 }
