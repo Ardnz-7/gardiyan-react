@@ -140,6 +140,22 @@ export async function startCrawl(sourceId: number): Promise<{ job_id: number; st
   })
 }
 
+export type StartCrawlInput = {
+  source_ids: number[]
+  keywords?: string[]
+  date_from?: string
+  maximum_pages?: number
+}
+
+export async function startCrawlMulti(
+  input: StartCrawlInput,
+): Promise<{ job_id?: number; job_ids?: number[]; status: string }> {
+  return request<{ job_id?: number; job_ids?: number[]; status: string }>('/api/crawls', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
+}
+
 export async function getAdvisories(
   params?: Record<string, string | number | boolean | null | undefined>,
 ): Promise<Advisory[]> {

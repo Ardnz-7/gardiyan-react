@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getCrawlJobs, getSources, startCrawl, type Source } from '../api/client'
+import { getCrawlJobs, getSources, startCrawlMulti, type Source } from '../api/client'
 import './CrawlJobs.css'
 
 type Job = {
@@ -32,13 +32,27 @@ const statusClasses: Record<string, string> = {
   stopped: 'job-status-danger',
 }
 
+type CrawlFormState = {
+  sourceIds: number[]
+  keywords: string
+  dateFrom: string
+  maximumPages: string
+}
+
+const emptyCrawlForm: CrawlFormState = {
+  sourceIds: [],
+  keywords: '',
+  dateFrom: '',
+  maximumPages: '',
+}
+
 export default function CrawlJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [sources, setSources] = useState<Source[]>([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [selectedSourceId, setSelectedSourceId] = useState<number | ''>('')
+  const [crawlForm, setCrawlForm] = useState<CrawlFormState>(emptyCrawlForm)
   const [submitting, setSubmitting] = useState(false)
 
   const loadJobs = async () => {
@@ -54,9 +68,6 @@ export default function CrawlJobs() {
     try {
       const data = await getSources()
       setSources(data)
-      if (data.length > 0 && selectedSourceId === '') {
-        setSelectedSourceId(data[0].id)
-      }
     } catch (error) {
       setErrorMessage((current) => current || (error instanceof Error ? error.message : 'Unable to load sources.'))
     }
@@ -81,11 +92,20 @@ export default function CrawlJobs() {
     }
   }, [])
 
+  const toggleSourceId = (sourceId: number) => {
+    setCrawlForm((current) => ({
+      ...current,
+      sourceIds: current.sourceIds.includes(sourceId)
+        ? current.sourceIds.filter((id) => id !== sourceId)
+        : [...current.sourceIds, sourceId],
+    }))
+  }
+
   const handleCreateJob = async (event: FormEvent) => {
     event.preventDefault()
 
-    if (!selectedSourceId) {
-      setErrorMessage('Please choose a source.')
+    if (crawlForm.sourceIds.length === 0) {
+      setErrorMessage('Please choose at least one source.')
       return
     }
 
@@ -93,9 +113,19 @@ export default function CrawlJobs() {
     setErrorMessage('')
 
     try {
-      await startCrawl(Number(selectedSourceId))
+      const keywords = crawlForm.keywords
+        .split(',')
+        .map((keyword) => keyword.trim())
+        .filter((keyword) => keyword.length > 0)
+
+      await startCrawlMulti({
+        source_ids: crawlForm.sourceIds,
+        keywords: keywords.length > 0 ? keywords : undefined,
+        date_from: crawlForm.dateFrom || undefined,
+        maximum_pages: crawlForm.maximumPages ? Number(crawlForm.maximumPages) : undefined,
+      })
       setShowForm(false)
-      setSelectedSourceId(sources[0]?.id ?? '')
+      setCrawlForm(emptyCrawlForm)
       await loadJobs()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Could not start crawl.')
@@ -118,22 +148,54 @@ export default function CrawlJobs() {
 
       {showForm && (
         <form className="crawl-form" onSubmit={handleCreateJob}>
-          <label>
-            <span>Source</span>
-            <select
-              value={selectedSourceId}
-              onChange={(event) => setSelectedSourceId(Number(event.target.value))}
-            >
+          <div className="crawl-field crawl-field-sources">
+            <span>Sources</span>
+            <div className="source-checkbox-list">
               {sources.length === 0 ? (
-                <option value="">No sources available</option>
+                <div className="source-checkbox-empty">No sources available</div>
               ) : (
                 sources.map((source) => (
-                  <option key={source.id} value={source.id}>
-                    {source.name}
-                  </option>
+                  <label key={source.id} className="source-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={crawlForm.sourceIds.includes(source.id)}
+                      onChange={() => toggleSourceId(source.id)}
+                    />
+                    <span>{source.name}</span>
+                  </label>
                 ))
               )}
-            </select>
+            </div>
+          </div>
+
+          <label className="crawl-field">
+            <span>Keywords (comma-separated)</span>
+            <input
+              type="text"
+              value={crawlForm.keywords}
+              onChange={(event) => setCrawlForm((current) => ({ ...current, keywords: event.target.value }))}
+              placeholder="e.g. critical, remote code execution"
+            />
+          </label>
+
+          <label className="crawl-field">
+            <span>Date from</span>
+            <input
+              type="date"
+              value={crawlForm.dateFrom}
+              onChange={(event) => setCrawlForm((current) => ({ ...current, dateFrom: event.target.value }))}
+            />
+          </label>
+
+          <label className="crawl-field">
+            <span>Maximum pages</span>
+            <input
+              type="number"
+              min="1"
+              value={crawlForm.maximumPages}
+              onChange={(event) => setCrawlForm((current) => ({ ...current, maximumPages: event.target.value }))}
+              placeholder="No limit"
+            />
           </label>
 
           <button type="submit" className="crawl-submit" disabled={submitting || sources.length === 0}>

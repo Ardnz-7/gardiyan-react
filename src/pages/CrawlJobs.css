@@ -54,6 +54,53 @@
   color: var(--text-primary);
 }
 
+.crawl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.crawl-field input {
+  min-width: 180px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.crawl-field-sources {
+  min-width: 220px;
+}
+
+.source-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+}
+
+.source-checkbox-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.source-checkbox-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .jobs-list {
   display: flex;
   flex-direction: column;
