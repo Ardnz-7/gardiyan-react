@@ -20,6 +20,7 @@ type Job = {
 const statusLabels: Record<string, string> = {
   queued: 'Sırada',
   running: 'Çalışıyor',
+  stopping: 'Durduruluyor...',
   completed: 'Tamamlandı',
   failed: 'Başarısız',
   stopped: 'Durduruldu',
@@ -28,6 +29,7 @@ const statusLabels: Record<string, string> = {
 const statusClasses: Record<string, string> = {
   queued: 'job-status-warning',
   running: 'job-status-warning',
+  stopping: 'job-status-warning',
   completed: 'job-status-success',
   failed: 'job-status-danger',
   stopped: 'job-status-danger',

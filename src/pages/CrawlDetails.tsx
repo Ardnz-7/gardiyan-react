@@ -8,6 +8,7 @@ import './CrawlDetails.css'
 const statusLabels: Record<string, string> = {
   queued: 'Sırada',
   running: 'Çalışıyor',
+  stopping: 'Durduruluyor...',
   completed: 'Tamamlandı',
   failed: 'Başarısız',
   stopped: 'Durduruldu',
@@ -16,12 +17,14 @@ const statusLabels: Record<string, string> = {
 const statusClasses: Record<string, string> = {
   queued: 'job-status-warning',
   running: 'job-status-warning',
+  stopping: 'job-status-warning',
   completed: 'job-status-success',
   failed: 'job-status-danger',
   stopped: 'job-status-danger',
 }
 
-const ACTIVE_STATUSES = new Set(['queued', 'running'])
+const ACTIVE_STATUSES = new Set(['queued', 'running', 'stopping'])
+const STOPPABLE_STATUSES = new Set(['queued', 'running'])
 
 export default function CrawlDetails() {
   const { id } = useParams<{ id: string }>()
@@ -146,7 +149,7 @@ export default function CrawlDetails() {
                   {job.completed_at ? ` · Bitiş: ${new Date(job.completed_at).toLocaleString()}` : ''}
                 </div>
 
-                {ACTIVE_STATUSES.has(job.status) && (
+                {STOPPABLE_STATUSES.has(job.status) && (
                   <div className="crawl-details-actions">
                     <button type="button" className="crawl-stop-button" onClick={handleStop} disabled={stopping}>
                       {stopping ? 'Durduruluyor...' : 'Stop'}
