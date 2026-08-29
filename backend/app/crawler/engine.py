@@ -10,6 +10,7 @@ from app.database import SessionLocal, engine
 from app.models.models import Advisory, Base, CrawlJob, CrawlLog, Source
 from app.crawler.base import Parser
 from app.crawler.robots import check_robots_allowed, is_known_public_feed
+from app.crawler.url_safety import validate_url_is_safe
 
 Base.metadata.create_all(bind=engine)
 
@@ -181,6 +182,12 @@ class CrawlEngine:
                 self._log(f'skipping duplicate URL: {url}', 'INFO', 'crawler')
                 continue
             self.visited_urls.add(url)
+
+            is_safe, reason = validate_url_is_safe(url)
+            if not is_safe:
+                self.job.error_count += 1
+                self._log(f'Rejected unsafe URL: {url} ({reason})', 'WARN', 'crawler')
+                continue
 
             request_path = '/' if url == self.source.base_url else url.replace(self.source.base_url, '', 1)
             if is_known_public_feed(url):

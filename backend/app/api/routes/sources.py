@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
+from app.crawler.url_safety import validate_url_is_safe
 from app.database import SessionLocal
 from app.models.models import Source
 from app.schemas import SourceCreate, SourceRead, SourceStatusUpdate, SourceUpdate
@@ -37,6 +38,10 @@ def list_sources():
     description='Creates a new crawl source with a name, base URL, enabled flag, and request delay.',
 )
 def create_source(payload: SourceCreate):
+    is_safe, reason = validate_url_is_safe(payload.base_url)
+    if not is_safe:
+        raise HTTPException(status_code=400, detail=f'Unsafe URL: {reason}')
+
     db = SessionLocal()
     try:
         source = Source(
@@ -63,13 +68,18 @@ def create_source(payload: SourceCreate):
     description='Partially updates a source; only fields present in the request body are overwritten.',
 )
 def update_source(source_id: int, payload: SourceUpdate):
+    updates = payload.model_dump(exclude_unset=True)
+    if 'base_url' in updates:
+        is_safe, reason = validate_url_is_safe(updates['base_url'])
+        if not is_safe:
+            raise HTTPException(status_code=400, detail=f'Unsafe URL: {reason}')
+
     db = SessionLocal()
     try:
         source = db.query(Source).filter(Source.id == source_id).first()
         if source is None:
             raise HTTPException(status_code=404, detail='Source not found')
 
-        updates = payload.model_dump(exclude_unset=True)
         for field, value in updates.items():
             setattr(source, field, value)
 
