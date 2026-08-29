@@ -7,7 +7,7 @@ from app.crawler.parsers.cisa_kev_parser import CISAKEVParser
 from app.crawler.parsers.nvd_parser import NVDParser
 from app.crawler.parsers.test_parser import TestParser
 from app.database import SessionLocal
-from app.models.models import CrawlJob, Source
+from app.models.models import CrawlJob, CrawlLog, Source
 from app.schemas import CrawlCreateResponse, CrawlJobRead, CrawlRequest
 
 router = APIRouter()
@@ -140,7 +140,12 @@ def get_crawl(job_id: int):
     '/api/crawls/{job_id}/stop',
     response_model=CrawlJobRead,
     summary='Stop a crawl job',
-    description='Marks the crawl job as stopped. Does not interrupt an in-flight background crawl.',
+    description=(
+        'Requests cooperative cancellation of a queued or running crawl job by setting its status to '
+        '"stopping"; the crawl engine checks for this during its request-delay wait and halts itself, '
+        'setting the final status to "stopped". A no-op (returns the job unchanged) if the job is '
+        'already in a terminal state (completed/failed/stopped).'
+    ),
 )
 def stop_crawl(job_id: int):
     db = SessionLocal()
@@ -148,10 +153,19 @@ def stop_crawl(job_id: int):
         job = db.query(CrawlJob).filter(CrawlJob.id == job_id).first()
         if job is None:
             raise HTTPException(status_code=404, detail='Job not found')
-        # Interrupting an in-flight background crawl is not implemented yet; this endpoint only updates the stored status.
-        job.status = 'stopped'
-        db.commit()
-        db.refresh(job)
+        if job.status in ('queued', 'running'):
+            job.status = 'stopping'
+            db.add(
+                CrawlLog(
+                    crawl_job_id=job.id,
+                    timestamp=datetime.utcnow(),
+                    log_level='WARN',
+                    message='stop requested by user',
+                    source='api',
+                )
+            )
+            db.commit()
+            db.refresh(job)
         return job
     finally:
         db.close()

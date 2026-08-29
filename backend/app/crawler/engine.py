@@ -30,6 +30,23 @@ class CrawlEngine:
             return None
         return self.session.query(CrawlJob).filter(CrawlJob.id == self.job_id).first()
 
+    def _is_stop_requested(self) -> bool:
+        if self.job is None:
+            return False
+        # Re-query fresh rather than trusting self.job.status, since the stop request is
+        # written by the API in a different DB session and won't be visible on our cached object.
+        current_status = (
+            self.session.query(CrawlJob.status).filter(CrawlJob.id == self.job.id).scalar()
+        )
+        return current_status == 'stopping'
+
+    def _halt_for_stop(self) -> CrawlJob:
+        self._log('stop requested detected during delay, halting crawl', 'WARN', 'crawler')
+        self.job.status = 'stopped'
+        self.job.completed_at = datetime.utcnow()
+        self.session.commit()
+        return self.job
+
     @staticmethod
     def _normalize_date(value: Any):
         if value is None:
@@ -157,6 +174,9 @@ class CrawlEngine:
         target_urls = urls if urls is not None else [self.source.base_url]
 
         for url in target_urls:
+            if self._is_stop_requested():
+                return self._halt_for_stop()
+
             if url in self.visited_urls:
                 self._log(f'skipping duplicate URL: {url}', 'INFO', 'crawler')
                 continue
@@ -180,7 +200,17 @@ class CrawlEngine:
 
             if self.source.request_delay:
                 self._log(f'applying {self.source.request_delay}s delay before request', 'INFO', 'crawler')
-                time.sleep(self.source.request_delay)
+                remaining = self.source.request_delay
+                stopped_during_delay = False
+                while remaining > 0:
+                    increment = min(0.5, remaining)
+                    time.sleep(increment)
+                    remaining -= increment
+                    if self._is_stop_requested():
+                        stopped_during_delay = True
+                        break
+                if stopped_during_delay:
+                    return self._halt_for_stop()
 
             try:
                 response = httpx.get(url, timeout=30)
