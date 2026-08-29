@@ -141,10 +141,11 @@ The following are actually implemented in code today:
 - **A documented allowlist exception for CISA's KEV feed** — `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json` returns a 403 on its `robots.txt` fetch due to CDN/bot-protection, not an actual crawl restriction on the feed itself. This one URL is explicitly allowlisted (`KNOWN_PUBLIC_DATA_FEEDS` in `robots.py`) and every use of the exception is logged.
 - **CORS restricted to the frontend origin** — `allow_origins=['http://localhost:5173']` in `backend/app/main.py` (not a wildcard).
 - **Deduplication** — a unique constraint on `(cve, source_domain)` on the `advisory` table (added via the `c2fc3ba0418e` migration) means re-crawling updates an existing advisory in place instead of creating a duplicate row.
+- **SSRF protection** — `validate_url_is_safe()` (`backend/app/crawler/url_safety.py`) rejects any URL whose scheme isn't `http`/`https`, or whose hostname resolves (via DNS) to a loopback, private, link-local, reserved, or multicast IP address — this covers cloud metadata endpoints like `169.254.169.254`. It's enforced twice: at source creation/update time (`POST`/`PUT /api/sources`), so an unsafe URL can never enter the database through the API in the first place, and defensively again at crawl time in the engine (`backend/app/crawler/engine.py`) as defense in depth. Note: this covers hostname/IP-based SSRF but does **not** protect against DNS-rebinding attacks, where the resolved IP could differ between validation time and request time — full protection against that would require pinning the resolved IP and connecting to it directly, which is out of scope for now.
+- **Cooperative crawl cancellation** — `POST /api/crawls/{job_id}/stop` sets the job's status to `"stopping"` (rather than a database-only `"stopped"`). The crawl engine (`backend/app/crawler/engine.py`) checks for this at the top of its URL loop and, more importantly, in 0.5s increments during its request-delay wait, and halts itself as soon as it sees `"stopping"`, landing on a final `"stopped"` status. Limitation: crawls in this codebase currently only ever process a single URL per job (`source.base_url`), so this has only been exercised against that single-URL, delay-wait case — it hasn't been tested against a genuinely long-running multi-page crawl, since none exist yet.
 
 The following are **not yet implemented**, per the project spec:
 
-- **No SSRF/URL validation** — crawl target URLs (source `base_url`, and any URLs a parser follows) are fetched directly via `httpx.get()` with no check against localhost, private IP ranges, or cloud metadata endpoints (e.g. `169.254.169.254`).
 - **No authentication** — every API endpoint is open with no auth/authorization layer of any kind.
 
 ## Ethical safeguards
@@ -155,11 +156,8 @@ The following are **not yet implemented**, per the project spec:
 
 ## Known limitations
 
-- **Crawl "stop" is not a real interrupt** — `POST /api/crawls/{job_id}/stop` only updates the job's stored status to `"stopped"`; it does not interrupt an in-flight background crawl, which will keep running to completion and can still overwrite the status afterward.
 - **No Docker setup** — see Tech stack above.
 - **No automated tests** — see Testing above.
 - **No authentication** — see Security controls above.
-- **No CSV (or any) export** — there is no export functionality anywhere in the API or UI.
-- **The Sources page has no edit/enable-disable UI** — `PUT /api/sources/{source_id}` and `PATCH /api/sources/{source_id}/status` exist and work in the API, but the Sources screen only supports viewing and creating sources; there is no UI to edit or toggle an existing one yet.
-- **No SSRF protection on crawled URLs** — see Security controls above.
+- **SSRF protection does not cover DNS-rebinding** — the resolved IP is checked at validation time (source creation/update, and again at crawl time), but not pinned; a hostname could theoretically resolve safely at validation and to a different, unsafe IP at actual request time. See Security controls above.
 - **`GET /api/stats` and `GET /api/statistics/summary` duplicate each other** — the older `/api/stats` path was kept, unchanged, purely for backward compatibility with the current frontend (which calls it), while `/api/statistics/summary` is the newer, spec-required path returning the identical shape. This duplication is intentional for now, not an oversight, but should eventually be consolidated.
