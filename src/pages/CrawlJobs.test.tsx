@@ -119,4 +119,18 @@ describe('CrawlJobs', () => {
       maximum_pages: undefined,
     })
   })
+
+  it('shows a progress bar only for the running job', async () => {
+    const jobs: CrawlJob[] = [
+      { ...sampleJobs[0], progress: 65 },
+      sampleJobs[1],
+    ]
+    getCrawlJobs.mockResolvedValue(jobs)
+    getSources.mockResolvedValue([sampleSource])
+
+    const { container } = renderCrawlJobs()
+
+    expect(await screen.findByText((text) => text.includes('65%'))).toBeInTheDocument()
+    expect(container.querySelectorAll('.progress-track')).toHaveLength(1)
+  })
 })
