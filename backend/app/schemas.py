@@ -1,7 +1,21 @@
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Annotated, Optional, List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PlainSerializer
+
+
+def _serialize_utc(value: datetime) -> str:
+    # All datetimes in this app are produced via datetime.utcnow(), which is naive (no tzinfo).
+    # Pydantic's default serialization emits naive datetimes with no offset/Z suffix, which
+    # browsers' Date constructor then misinterprets as local time instead of UTC. Since every
+    # value here is already UTC, a bare 'Z' suffix is correct; an aware datetime (not currently
+    # produced anywhere) is serialized as-is since it already carries its own offset.
+    if value.tzinfo is None:
+        return value.isoformat() + 'Z'
+    return value.isoformat()
+
+
+UTCDatetime = Annotated[datetime, PlainSerializer(_serialize_utc, return_type=str, when_used='json')]
 
 
 class SourceCreate(BaseModel):
@@ -38,9 +52,9 @@ class SourceRead(BaseModel):
     base_url: Optional[str] = None
     enabled: bool
     request_delay: int
-    created_at: datetime
-    updated_at: datetime
-    last_crawl_at: Optional[datetime] = None
+    created_at: UTCDatetime
+    updated_at: UTCDatetime
+    last_crawl_at: Optional[UTCDatetime] = None
 
 
 class CrawlJobRead(BaseModel):
@@ -50,8 +64,8 @@ class CrawlJobRead(BaseModel):
     source_id: int
     status: str
     progress: int
-    started_at: datetime
-    completed_at: Optional[datetime] = None
+    started_at: UTCDatetime
+    completed_at: Optional[UTCDatetime] = None
     pages_visited: int
     records_extracted: int
     error_count: int
@@ -72,7 +86,7 @@ class AdvisoryRead(BaseModel):
     product: Optional[str] = None
     severity: Optional[str] = None
     summary: Optional[str] = None
-    collection_date: datetime
+    collection_date: UTCDatetime
 
 
 class CrawlLogRead(BaseModel):
@@ -80,7 +94,7 @@ class CrawlLogRead(BaseModel):
 
     id: int
     crawl_job_id: int
-    timestamp: datetime
+    timestamp: UTCDatetime
     log_level: Optional[str] = None
     message: Optional[str] = None
     source: Optional[str] = None
