@@ -17,9 +17,17 @@ fileConfig(config.config_file_name)
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from app.database import DATABASE_URL  # noqa: E402
 from app.models import models as models_module  # noqa: E402
 
 target_metadata = models_module.Base.metadata
+
+# alembic.ini's sqlalchemy.url is a static fallback (and historically got baked in as an
+# absolute path specific to one machine/user, which breaks for anyone else — Docker
+# containers included). Overriding it here with the app's own DATABASE_URL keeps migrations
+# always targeting the exact same database file the running app itself would open, on any
+# machine or container, rather than trusting a hardcoded path in the ini file.
+config.set_main_option('sqlalchemy.url', DATABASE_URL)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

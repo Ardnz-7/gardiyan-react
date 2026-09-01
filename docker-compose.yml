@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # A named volume can only mount onto a directory, not a file — /app/gardiyan.db is a
+      # symlink (created in backend/Dockerfile) into /app/data/gardiyan.db, so the actual
+      # bytes live under this directory mount and persist across container restarts.
+      - backend_db:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend_db:
