@@ -186,8 +186,8 @@
 }
 
 .badge.medium {
-  background: var(--bg-accent);
-  color: var(--text-accent);
+  background: var(--bg-medium);
+  color: var(--text-medium);
 }
 
 .badge.low {
