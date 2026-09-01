@@ -1,5 +1,7 @@
 from urllib import robotparser
-from urllib.parse import urljoin
+from urllib.parse import urlparse
+
+import httpx
 
 
 KNOWN_PUBLIC_DATA_FEEDS = {
@@ -17,13 +19,21 @@ def check_robots_allowed(base_url: str, path: str, user_agent: str = "GardiyanBo
     if not base_url or not path:
         return True
 
-    base = base_url.rstrip("/")
-    robots_url = urljoin(base + "/", "robots.txt")
+    parsed = urlparse(base_url)
+    robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
     parser = robotparser.RobotFileParser()
 
     try:
-        parser.set_url(robots_url)
-        parser.read()
+        # robotparser.read() fetches robots.txt itself via urllib with a generic default
+        # User-Agent, which some CDNs (NVD, Red Hat) reject with a 403 that robotparser then
+        # interprets as "disallow everything" — a false block, not a real robots.txt rule. So
+        # we fetch it ourselves with a real User-Agent and hand robotparser the text directly.
+        response = httpx.get(robots_url, headers={'User-Agent': user_agent}, timeout=10)
+        if response.status_code == 404:
+            return True
+        if response.status_code >= 400:
+            return False
+        parser.parse(response.text.splitlines())
         return parser.can_fetch(user_agent, path)
     except Exception:
         return False

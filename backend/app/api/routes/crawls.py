@@ -6,6 +6,7 @@ from app.crawler.engine import CrawlEngine
 from app.crawler.parsers.cisa_kev_parser import CISAKEVParser
 from app.crawler.parsers.github_advisories_parser import GitHubAdvisoriesParser
 from app.crawler.parsers.nvd_parser import NVDParser
+from app.crawler.parsers.redhat_parser import RedHatParser
 from app.crawler.parsers.test_parser import TestParser
 from app.database import SessionLocal
 from app.models.models import CrawlJob, CrawlLog, Source
@@ -31,6 +32,8 @@ def _run_crawl_in_background(job_id: int) -> None:
             parser = CISAKEVParser()
         elif 'api.github.com' in base_url:
             parser = GitHubAdvisoriesParser()
+        elif 'access.redhat.com' in base_url:
+            parser = RedHatParser()
         else:
             parser = TestParser()
         engine = CrawlEngine(source=source, parser=parser, job_id=job.id)
