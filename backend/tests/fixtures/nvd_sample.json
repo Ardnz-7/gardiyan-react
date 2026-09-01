@@ -1,0 +1,109 @@
+{
+  "resultsPerPage": 3,
+  "startIndex": 0,
+  "totalResults": 3,
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2026-12345",
+        "published": "2026-08-15T10:30:00.000",
+        "lastModified": "2026-08-16T09:00:00.000",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "A buffer overflow vulnerability in ExampleApp allows remote attackers to execute arbitrary code."
+          },
+          {
+            "lang": "es",
+            "value": "Una vulnerabilidad de desbordamiento de buffer en ExampleApp permite a atacantes remotos ejecutar codigo arbitrario."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "source": "nvd@nist.gov",
+              "type": "Primary",
+              "cvssData": {
+                "version": "3.1",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL"
+              }
+            }
+          ]
+        },
+        "references": [
+          {
+            "url": "https://example.com/advisories/CVE-2026-12345",
+            "source": "nvd@nist.gov"
+          },
+          {
+            "url": "https://github.com/example/repo/security/advisories/GHSA-xxxx",
+            "source": "cve@mitre.org"
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-67890",
+        "published": "2026-08-10T14:00:00.000",
+        "lastModified": "2026-08-11T08:00:00.000",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "An SQL injection vulnerability exists in the login form of WidgetCorp Portal."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV30": [
+            {
+              "source": "nvd@nist.gov",
+              "type": "Primary",
+              "cvssData": {
+                "version": "3.0",
+                "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                "baseScore": 7.5,
+                "baseSeverity": "HIGH"
+              }
+            }
+          ]
+        },
+        "references": [
+          {
+            "url": "https://widgetcorp.example/security/CVE-2026-67890",
+            "source": "nvd@nist.gov"
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-11111",
+        "published": "2026-08-01T00:00:00.000",
+        "lastModified": "2026-08-02T00:00:00.000",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "A cross-site scripting vulnerability in the comment widget allows script injection."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV2": [
+            {
+              "source": "nvd@nist.gov",
+              "type": "Primary",
+              "cvssData": {
+                "version": "2.0",
+                "vectorString": "AV:N/AC:L/Au:N/C:N/I:P/A:N",
+                "baseScore": 4.3
+              },
+              "baseSeverity": "MEDIUM"
+            }
+          ]
+        },
+        "references": []
+      }
+    }
+  ]
+}

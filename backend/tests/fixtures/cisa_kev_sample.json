@@ -1,0 +1,40 @@
+{
+  "title": "CISA Catalog of Known Exploited Vulnerabilities",
+  "catalogVersion": "2026.08.28",
+  "count": 3,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2026-22222",
+      "vendorProject": "ExampleSoft",
+      "product": "SecureGateway",
+      "vulnerabilityName": "ExampleSoft SecureGateway Authentication Bypass Vulnerability",
+      "dateAdded": "2026-08-28",
+      "shortDescription": "ExampleSoft SecureGateway contains an authentication bypass vulnerability that allows an attacker to gain administrative access.",
+      "requiredAction": "Apply mitigations per vendor instructions.",
+      "dueDate": "2026-09-18",
+      "knownRansomwareCampaignUse": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-33333",
+      "vendorProject": "WidgetCorp",
+      "product": "FileShare Server",
+      "vulnerabilityName": "WidgetCorp FileShare Server Path Traversal Vulnerability",
+      "dateAdded": "2026-08-25",
+      "shortDescription": "WidgetCorp FileShare Server contains a path traversal vulnerability that allows arbitrary file read.",
+      "requiredAction": "Apply updates per vendor instructions.",
+      "dueDate": "2026-09-15",
+      "knownRansomwareCampaignUse": "Known"
+    },
+    {
+      "cveID": "CVE-2026-44444",
+      "vendorProject": "AcmeNet",
+      "product": "Router OS",
+      "vulnerabilityName": "AcmeNet Router OS Command Injection Vulnerability",
+      "dateAdded": "2026-08-20",
+      "shortDescription": "AcmeNet Router OS contains a command injection vulnerability in the admin web interface.",
+      "requiredAction": "Apply updates per vendor instructions.",
+      "dueDate": "2026-09-10",
+      "knownRansomwareCampaignUse": "Unknown"
+    }
+  ]
+}
