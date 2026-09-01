@@ -4,6 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 from app.crawler.engine import CrawlEngine
 from app.crawler.parsers.cisa_kev_parser import CISAKEVParser
+from app.crawler.parsers.github_advisories_parser import GitHubAdvisoriesParser
 from app.crawler.parsers.nvd_parser import NVDParser
 from app.crawler.parsers.test_parser import TestParser
 from app.database import SessionLocal
@@ -28,6 +29,8 @@ def _run_crawl_in_background(job_id: int) -> None:
             parser = NVDParser()
         elif 'cisa.gov' in base_url:
             parser = CISAKEVParser()
+        elif 'api.github.com' in base_url:
+            parser = GitHubAdvisoriesParser()
         else:
             parser = TestParser()
         engine = CrawlEngine(source=source, parser=parser, job_id=job.id)
