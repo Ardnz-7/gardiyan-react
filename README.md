@@ -16,6 +16,8 @@ Web UI  --->  REST API  --->  Crawler Engine  --->  Database
 - The **Crawler Engine** (`backend/app/crawler`) fetches and parses advisory data from configured sources and writes results to the database. **The crawler engine never talks to the UI directly — all crawl status and results flow back through the REST API.** It currently runs in-process as a FastAPI background task (`BackgroundTasks`), not a separate worker/queue.
 - The **Database** (SQLite) stores sources, crawl jobs, advisories, and crawl logs.
 
+See [docs/architecture.md](docs/architecture.md) for a rendered diagram version of the flow above.
+
 ## Tech stack
 
 - **Backend:** Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic

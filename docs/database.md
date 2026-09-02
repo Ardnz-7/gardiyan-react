@@ -1,5 +1,39 @@
 # Database Schema
 
+```mermaid
+erDiagram
+    SOURCE ||--o{ CRAWL_JOB : "targets"
+    CRAWL_JOB ||--o{ ADVISORY : "produces"
+    CRAWL_JOB ||--o{ CRAWL_LOG : "logs"
+
+    SOURCE {
+        int id PK
+        string name
+        string base_url
+        bool enabled
+        int request_delay
+    }
+    CRAWL_JOB {
+        int id PK
+        int source_id FK
+        string status
+        int progress
+    }
+    ADVISORY {
+        int id PK
+        int crawl_job_id FK
+        string cve
+        string severity
+        string source_domain
+    }
+    CRAWL_LOG {
+        int id PK
+        int crawl_job_id FK
+        string log_level
+        string message
+    }
+```
+
 ## sources
 | Field | Type | Notes |
 |---|---|---|
