@@ -22,7 +22,7 @@ Web UI  --->  REST API  --->  Crawler Engine  --->  Database
 - **Database:** SQLite
 - **Frontend:** React 19, Vite, TypeScript, react-router-dom
 
-**Docker is not yet set up.** There is no `Dockerfile` or `docker-compose.yml` in this repository. This is planned, not done — both the backend and frontend currently run directly on the host.
+**Docker is set up.** The whole app (backend + frontend) can be built and run via `docker-compose.yml` at the project root — see [Docker setup](#docker-setup) below. Running directly on the host (as described in Installation & setup) still works too; Docker is an alternative, not a replacement.
 
 ## Project structure
 
@@ -37,7 +37,10 @@ backend/
     main.py             FastAPI app entrypoint, CORS config, router registration
   alembic/              Migration environment and versioned migrations
   requirements.txt
-  tests/                Currently empty (see Testing below)
+  tests/                pytest suite: sources, crawls, advisories, url_safety, parsers, integration (see Testing below)
+  Dockerfile             Backend container image (python:3.12-slim + uvicorn)
+  entrypoint.sh           Container startup script: runs alembic upgrade head, then uvicorn
+  .dockerignore           Excludes venv/, __pycache__/, gardiyan.db, tests/, etc. from the build context
 src/                    React frontend — lives at the project root, NOT under a separate frontend/ folder
   api/client.ts         Typed API client (hardcoded API_BASE_URL)
   pages/                One component per screen (Dashboard, Sources, CrawlJobs, Advisories, Logs)
@@ -47,6 +50,10 @@ docs/
   database.md            Database schema reference
   screens.md              Frontend screen reference
 package.json             Frontend (Vite) project config
+Dockerfile                Frontend container image (multi-stage: node:22-alpine build -> nginx:alpine serve)
+nginx.conf                 nginx config the frontend image serves with (port 3000, SPA fallback)
+docker-compose.yml          Orchestrates both containers; see Docker setup below
+.dockerignore                Excludes node_modules/, dist/, .git/, backend/ from the frontend build context
 README.md                This file
 ```
 
@@ -96,6 +103,22 @@ There is currently no `.env` file or environment-variable-based configuration an
 
 This means the backend and frontend must run on exactly these hosts/ports for the app to work out of the box, and deploying to any other environment requires manually editing these two hardcoded values in source. This is a known limitation, not a configuration feature.
 
+## Docker setup
+
+The whole app can be started with `docker compose up --build` from the project root — no local Python or Node install needed.
+
+- **Frontend:** `http://localhost:3000`
+- **Backend API:** `http://localhost:8000`
+- **API documentation:** `http://localhost:8000/docs`
+
+The SQLite database persists across container restarts via a named Docker volume (`backend_db`). A named volume can only mount onto a directory, not a bare file, so `/app/gardiyan.db` is actually a symlink into the mounted `/app/data` directory — see `backend/Dockerfile` for how that's set up.
+
+CORS is configured to allow both the Vite dev origin (`localhost:5173`) and the Dockerized frontend's origin (`localhost:3000`) simultaneously, so either workflow works with no config changes.
+
+Database migrations run automatically on container startup (via `backend/entrypoint.sh`), not manually — there's no separate `alembic upgrade head` step to remember when using Docker.
+
+To stop: `docker compose down` (stops the containers, keeps the persisted database) or `docker compose down -v` (also deletes the named volume, wiping the database).
+
 ## Database migrations
 
 Migrations are managed with Alembic, run from the `backend/` directory:
@@ -130,7 +153,20 @@ See [docs/api.md](docs/api.md) for the full endpoint reference (parameters, exam
 
 ## Testing
 
-**No automated tests exist yet.** `backend/tests/` currently contains only a placeholder `.gitkeep` file, and there is no frontend test setup (no test runner configured in `package.json`). This is a known gap, not a hidden one.
+**Backend:** pytest, covering health, sources, crawls, advisories, URL safety/SSRF validation, parsers (against local JSON fixtures, no network calls), and one end-to-end integration test that exercises the full API → crawler → database → API flow — 36 tests total. Run from the `backend/` directory:
+
+```bash
+cd backend
+pytest
+```
+
+Two of the URL-safety tests (`test_accepts_public_https_url`, `test_rejects_unresolvable_hostname`) do real DNS resolution rather than mocking it, so they need network access to pass.
+
+**Frontend:** Vitest + React Testing Library, covering Dashboard, CrawlJobs, and Advisories — loading/error states, form validation, client-side filtering, and progress display — 13 tests total. Run from the project root:
+
+```bash
+npm test
+```
 
 ## Security controls implemented
 
@@ -156,8 +192,7 @@ The following are **not yet implemented**, per the project spec:
 
 ## Known limitations
 
-- **No Docker setup** — see Tech stack above.
-- **No automated tests** — see Testing above.
 - **No authentication** — see Security controls above.
 - **SSRF protection does not cover DNS-rebinding** — the resolved IP is checked at validation time (source creation/update, and again at crawl time), but not pinned; a hostname could theoretically resolve safely at validation and to a different, unsafe IP at actual request time. See Security controls above.
 - **`GET /api/stats` and `GET /api/statistics/summary` duplicate each other** — the older `/api/stats` path was kept, unchanged, purely for backward compatibility with the current frontend (which calls it), while `/api/statistics/summary` is the newer, spec-required path returning the identical shape. This duplication is intentional for now, not an oversight, but should eventually be consolidated.
+- **Docker Compose has no Redis/worker service** — crawls run in-process as FastAPI background tasks rather than through a queue, so no message broker or worker container is needed; this is intentional per the current architecture, not an oversight.
